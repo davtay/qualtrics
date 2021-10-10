@@ -1,17 +1,16 @@
 import requests, json, os, csv, sys
 from dotenv import load_dotenv
 
-def qualtrics_lookup_delete():
-    directory = os.getenv("QUALTRICS_DIRECTORY")
-    qualtrics_url = os.getenv("QUALTRICS_URL")
-    search_url = f"{qualtrics_url}{directory}/contacts/search"
+directory = os.getenv("QUALTRICS_DIRECTORY")
+qualtrics_url = os.getenv("QUALTRICS_URL")
+search_url = f"{qualtrics_url}{directory}/contacts/search"
+qualtrics_token = os.getenv("QUALTRICS_TOKEN")
+headers = {
+    "Content-Type": "application/json",
+    "X-API-TOKEN": qualtrics_token
+}
 
-    qualtrics_token = os.getenv("QUALTRICS_TOKEN")
-    headers = {
-        "Content-Type": "application/json",
-        "X-API-TOKEN": qualtrics_token
-    }
-
+def qualtrics_lookup():
     qualtrics_file_loc = os.getenv("QUALTRICS_FILE_LOC")
     with open(qualtrics_file_loc, 'r') as csv_file:
         field = next(csv_file)
@@ -30,26 +29,28 @@ def qualtrics_lookup_delete():
 
             if contact['result']['elements']:
                 contact_id = contact['result']['elements'][0]['id']
-                delete_contact_url = f"{qualtrics_url}{directory}/contacts/{contact_id}"
-                try:
-                    delete_contact = requests.request("DELETE",delete_contact_url,headers=headers)
-                    delete_contact.raise_for_status()
-                    log_to_chat('success')
-                except requests.exceptions.HTTPError as errh:
-                    log_to_chat('errh')
-                    sys.exit()
-                except requests.exceptions.ConnectionError as errc:
-                    log_to_chat('errc')
-                    sys.exit()
-                except requests.exceptions.Timeout as errt:
-                    log_to_chat('errt')
-                    sys.exit()
-                except requests.exceptions.RequestException as err:
-                    log_to_chat()
-                    sys.exit()
+                qualtrics_delete(contact_id)
+                
+def qualtrics_delete(contact_id):
+    delete_contact_url = f"{qualtrics_url}{directory}/contacts/{contact_id}"
+    try:
+        delete_contact = requests.request("DELETE",delete_contact_url,headers=headers)
+        delete_contact.raise_for_status()
+        log_to_chat('success')
+    except requests.exceptions.HTTPError as errh:
+        log_to_chat('errh')
+        sys.exit()
+    except requests.exceptions.ConnectionError as errc:
+        log_to_chat('errc')
+        sys.exit()
+    except requests.exceptions.Timeout as errt:
+        log_to_chat('errt')
+        sys.exit()
+    except requests.exceptions.RequestException as err:
+        log_to_chat()
+        sys.exit()
 
 def log_to_chat(status):
-    
     webhook_url = os.getenv("WEBHOOK_URL")
     message_headers = {'Content-Type' : 'application/json; charset=UTF-8'}
     message_success = {'text' : 'Disabled staff deletion completed'}
@@ -70,4 +71,4 @@ def log_to_chat(status):
         chat_message = requests.post(webhook_url,data=json.dumps(message_err),headers=message_headers)
                 
 if __name__ == '__main__':
-    qualtrics_lookup_delete()
+    qualtrics_lookup()
