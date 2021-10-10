@@ -34,21 +34,21 @@ def qualtrics_lookup_delete():
                 try:
                     delete_contact = requests.request("DELETE",delete_contact_url,headers=headers)
                     delete_contact.raise_for_status()
-                    post_to_chat('success')
+                    log_to_chat('success')
                 except requests.exceptions.HTTPError as errh:
-                    post_to_chat('errh')
+                    log_to_chat('errh')
                     sys.exit()
                 except requests.exceptions.ConnectionError as errc:
-                    post_to_chat('errc')
+                    log_to_chat('errc')
                     sys.exit()
                 except requests.exceptions.Timeout as errt:
-                    post_to_chat('errt')
+                    log_to_chat('errt')
                     sys.exit()
                 except requests.exceptions.RequestException as err:
-                    post_to_chat()
+                    log_to_chat()
                     sys.exit()
 
-def post_to_chat(status):
+def log_to_chat(status):
     
     webhook_url = os.getenv("WEBHOOK_URL")
     message_headers = {'Content-Type' : 'application/json; charset=UTF-8'}
