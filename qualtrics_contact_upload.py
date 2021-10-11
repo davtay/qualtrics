@@ -1,6 +1,8 @@
 import requests, json, os
 from dotenv import load_dotenv
 
+load_dotenv()
+
 def log_to_chat(status):
     webhook_url = os.getenv("WEBHOOK_URL")
     message_headers = {'Content-Type' : 'application/json; charset=UTF-8'}
